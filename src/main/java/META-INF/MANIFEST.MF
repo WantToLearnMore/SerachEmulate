@@ -1,0 +1,39 @@
+Manifest-Version: 1.0
+Class-Path: spring-jcl-5.0.8.RELEASE.jar log4j-api-2.10.0.jar javax.tr
+ ansaction-api-1.2.jar mybatis-spring-boot-starter-1.3.2.jar netty-res
+ olver-4.1.27.Final.jar tomcat-embed-core-8.5.32.jar HikariCP-2.7.9.ja
+ r commons-lang3-3.7.jar spring-boot-2.0.4.RELEASE.jar spring-aop-5.0.
+ 8.RELEASE.jar jackson-datatype-jsr310-2.9.6.jar jackson-module-parame
+ ter-names-2.9.6.jar jul-to-slf4j-1.7.25.jar spring-boot-starter-2.0.4
+ .RELEASE.jar jedis-2.9.0.jar spring-jdbc-5.0.8.RELEASE.jar antlr-2.7.
+ 7.jar validation-api-2.0.1.Final.jar reactor-core-3.1.8.RELEASE.jar j
+ ackson-datatype-jdk8-2.9.6.jar mysql-connector-java-6.0.5.jar lettuce
+ -core-5.0.4.RELEASE.jar reactive-streams-1.0.2.jar netty-buffer-4.1.2
+ 7.Final.jar spring-webmvc-5.0.8.RELEASE.jar logback-core-1.2.3.jar sp
+ ring-context-support-5.0.8.RELEASE.jar classmate-1.3.4.jar spring-bea
+ ns-5.0.8.RELEASE.jar hibernate-jpa-2.1-api-1.0.2.Final.jar spring-tx-
+ 5.0.8.RELEASE.jar jandex-2.0.3.Final.jar spring-boot-starter-data-red
+ is-2.0.4.RELEASE.jar tomcat-embed-el-8.5.32.jar spring-expression-5.0
+ .8.RELEASE.jar mybatis-spring-1.3.2.jar spring-boot-starter-data-jpa-
+ 2.0.4.RELEASE.jar netty-codec-4.1.27.Final.jar spring-boot-starter-to
+ mcat-2.0.4.RELEASE.jar hibernate-validator-6.0.11.Final.jar javax.ann
+ otation-api-1.3.2.jar spring-data-commons-2.0.9.RELEASE.jar spring-bo
+ ot-starter-jdbc-2.0.4.RELEASE.jar netty-common-4.1.27.Final.jar sprin
+ g-boot-starter-aop-2.0.4.RELEASE.jar slf4j-api-1.7.25.jar jboss-loggi
+ ng-3.3.2.Final.jar jackson-annotations-2.9.0.jar spring-core-5.0.8.RE
+ LEASE.jar spring-orm-5.0.8.RELEASE.jar spring-boot-autoconfigure-2.0.
+ 4.RELEASE.jar mybatis-spring-boot-autoconfigure-1.3.2.jar spring-oxm-
+ 5.0.8.RELEASE.jar druid-1.1.8.jar spring-aspects-5.0.8.RELEASE.jar sn
+ akeyaml-1.19.jar spring-web-5.0.8.RELEASE.jar spring-data-keyvalue-2.
+ 0.9.RELEASE.jar dom4j-1.6.1.jar javassist-3.22.0-GA.jar spring-boot-s
+ tarter-logging-2.0.4.RELEASE.jar mybatis-3.4.6.jar spring-context-5.0
+ .8.RELEASE.jar jackson-core-2.9.6.jar hibernate-core-5.2.17.Final.jar
+  log4j-to-slf4j-2.10.0.jar spring-boot-starter-web-2.0.4.RELEASE.jar 
+ spring-boot-starter-json-2.0.4.RELEASE.jar netty-handler-4.1.27.Final
+ .jar aspectjweaver-1.8.13.jar commons-io-2.6.jar logback-classic-1.2.
+ 3.jar spring-data-redis-2.0.9.RELEASE.jar jackson-databind-2.9.6.jar 
+ spring-data-jpa-2.0.9.RELEASE.jar fastjson-1.2.46.jar netty-transport
+ -4.1.27.Final.jar commons-pool2-2.5.0.jar hibernate-commons-annotatio
+ ns-5.0.1.Final.jar tomcat-embed-websocket-8.5.32.jar
+Main-Class: com.emulate.search.SerachApplication
+
