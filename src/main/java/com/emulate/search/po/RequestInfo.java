@@ -3,20 +3,20 @@ package com.emulate.search.po;
 public class RequestInfo {
     private int pageNo=1;//页码 默认为第一页
     private int pageSize=10;//每页大小 默认为每页10条数据
-    private String sourceName;//资源名字
-    private String sourceType;//资源类型
+    private String sourceType="video";//资源类型
     private String author;//作者
     private int operition=1;//操作类型 默认为or
+    private String keywords;
 
     @Override
     public String toString() {
         return "RequestInfo{" +
                 "pageNo=" + pageNo +
                 ", pageSize=" + pageSize +
-                ", sourceName='" + sourceName + '\'' +
                 ", sourceType='" + sourceType + '\'' +
                 ", author='" + author + '\'' +
                 ", operition=" + operition +
+                ", keywords='" + keywords + '\'' +
                 '}';
     }
 
@@ -34,14 +34,6 @@ public class RequestInfo {
 
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
-    }
-
-    public String getSourceName() {
-        return sourceName;
-    }
-
-    public void setSourceName(String sourceName) {
-        this.sourceName = sourceName;
     }
 
     public String getSourceType() {
@@ -66,5 +58,13 @@ public class RequestInfo {
 
     public void setOperition(int operition) {
         this.operition = operition;
+    }
+
+    public String getKeywords() {
+        return keywords;
+    }
+
+    public void setKeywords(String keywords) {
+        this.keywords = keywords;
     }
 }

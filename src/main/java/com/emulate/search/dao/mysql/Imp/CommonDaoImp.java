@@ -57,7 +57,31 @@ public class CommonDaoImp implements CommonDao {
         List<Map<String, Object>>result=jdbcTemplate.queryForList(sql.toString());
         return result.size()==0? null: ObjectUtil.mapToObject(result.get(0),T);
     }
+    public List<Map<String,Object>> selectSourceLike(String key1,String key2,String scope1,String scope2,int option,String tableName,String ...fields){
+        String op="or";
+        if(option!=1){
+            op="and";
+        }
+        StringBuilder sql=new StringBuilder("");
+        sql.append(" select ");
+        sql.append(ObjectUtil.buildFieldString(fields));
+        sql.append(" from ");
+        sql.append(tableName);
+        sql.append(" where locate ('");
+        sql.append(key1);
+        sql.append("',");
+        sql.append(scope1);
+        sql.append(")");
+        sql.append(" "+op+" ");
+        sql.append(" locate ('");
+        sql.append(key2);
+        sql.append("',");
+        sql.append(scope2);
+        sql.append(")");
 
+        List<Map<String,Object>>result=jdbcTemplate.queryForList(sql.toString());
+        return result.size()==0?null:result;
+    }
 
     /**
      * 模糊查询
@@ -105,6 +129,9 @@ public class CommonDaoImp implements CommonDao {
         List<Map<String,Object>>result=jdbcTemplate.queryForList(sql.toString());
         return result.size()==0?null:result;
     }
+
+
+
     public int countSource(String tableName){
         StringBuilder sql=new StringBuilder("");
         sql.append("select count(*) num from ");
@@ -113,6 +140,11 @@ public class CommonDaoImp implements CommonDao {
 
         return Integer.valueOf(map.get("num").toString());
     }
-
+    public void delete(int id){
+        StringBuilder sql=new StringBuilder("");
+        sql.append(" delete from video where id > ");
+        sql.append(id);
+        jdbcTemplate.execute(sql.toString());
+    }
 
 }

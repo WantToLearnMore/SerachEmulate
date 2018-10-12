@@ -11,6 +11,12 @@ public class Context {
     public static String esDefaultIndex="searchEmulate";
 
 
-    public static final String audioKey = "audio";//这里的key值可以自己修改
-    public static final String videoKey="video";
+    public static final String audioKey = "audioKey";//这里的key值可以自己修改
+    public static final String videoKey="videoKey";
+    public static final String videoAuthor="videoAuthor";
+    public static final String audioAuthor="audioAuthor";
+    public static final String videoName="videoName";
+    public static final String audioName="audioName";
+
+    public static final String[]searchFileds={"id","name","author","description"};
 }

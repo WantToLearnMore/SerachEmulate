@@ -5,8 +5,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.emulate.search.common.Context;
 import com.emulate.search.common.Status;
 import com.emulate.search.dao.mysql.CommonDao;
+import com.emulate.search.po.Audio;
+import com.emulate.search.po.RequestInfo;
 import com.emulate.search.po.Video;
 import com.emulate.search.service.RedisService;
+import com.emulate.search.service.SearchService;
 import com.emulate.search.utils.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,98 +34,77 @@ public class SearchByRedisController {
     @Autowired
     private RedisService redisService;
 
+    @Autowired
+    private SearchService searchService;
+
+
     /**
      * 所有包含关键字的视频或音频文件
-     * @param keywords
-     * @param author
-     * @param operition
+     * @param requestInfo
      * @return
      * */
     @GetMapping("/search")
-    public String searchSource(@RequestParam("keywords")String keywords,@RequestParam("author")String author,@RequestParam("operition")String operition){
+    public String searchSource(RequestInfo requestInfo){
 
-        List<Map<String,Object>>videos=new ArrayList<>();
-        List<Map<String,Object>>audios=new ArrayList<>();
         String msg="";
+        List result=null;
+        Long start=System.currentTimeMillis();
+        List sourceInRedis=searchService.searchFromRedis(redisService,requestInfo);
 
-
-        boolean hasAudio=redisService.exists(Context.audioKey.concat(keywords));
-
-        if (hasAudio){
-           audios.add((Map<String,Object>) redisService.get(Context.audioKey.concat(keywords)));
-           msg="本次查询的音频数据来自redis缓存！！！";
+        if(sourceInRedis==null||sourceInRedis.isEmpty()){
+            result=searchService.searchWithRedis(redisService,requestInfo,commonDao);
+            msg="本次查询的数据来自数据库！！！";
         }else {
-            //如果缓存中没有，就从数据库中查询，若数据库中有就返回并将数据添加入缓存，若数据库中没有就返回无该类数据
-            audios=commonDao.selectSourceLike(keywords,"name","audio");
-            if(!(audios==null||audios.isEmpty())){
-                hasAudio=true;
-                msg="本次查询的音频数据来自数据库！！！";
-                for (Map<String,Object>map:audios) {
-                    //将数据写入缓存，有效时间为10分钟
-                    redisService.set(Context.audioKey.concat(String.valueOf(map.get("name"))),map,10L,TimeUnit.MINUTES);
-                    System.out.println(Context.audioKey.concat(String.valueOf(map.get("name"))));
-                }
-            }
+            result=sourceInRedis;
+            msg="本次查询的数据来自redis缓存！！！";;
         }
-        boolean hasVideo=redisService.exists(Context.videoKey.concat(keywords));//判断缓存中是否存在
-        System.out.println(Context.videoKey.concat(keywords));
-        if(hasVideo){
-            videos.add((Map<String,Object>) redisService.get(Context.videoKey.concat(keywords)));
-            msg=msg+"本次查询的视频数据来自redis缓存！！！";
-        }else {
-            videos=commonDao.selectSourceLike(keywords,"name","video");
-            if(!(videos.isEmpty()||videos==null)){
-                hasVideo=true;
-                msg=msg+"本次查询的视频数据来自数据库！！！";
-                for (Map<String,Object>map:videos) {
-                    System.out.println(Context.videoKey.concat(String.valueOf(map.get("name"))));
-                    redisService.set(Context.videoKey.concat(String.valueOf(map.get("name"))),map,10L,TimeUnit.MINUTES);
-                }
-            }
+        String status=Status.SUCCESS;
+        if(result==null||result.isEmpty()){
+            status=Status.FAIL;
+            msg=Context.NoSuchFile;
         }
-
-        Map<String,Object>result=new HashMap<>();
-        String status=Status.FAIL;
-        String msge=Context.NoSuchFile;
-        System.out.println(hasAudio||hasVideo);
-        if(hasAudio||hasVideo){
-           status=Status.SUCCESS;
-           msge=msg;
-        }
-
-        result.put("video",videos);
-        result.put("audio",audios);
-        return ResultUtil.buildJSONResult(status,msge,result);
+        Long end=System.currentTimeMillis();
+        return ResultUtil.buildJSONResult(status,msg,String.valueOf(end-start),result);
     }
 
 
     /**
-     * @param keywords 关键字，目前为资源名称
+     * 检索资源的详细信息
+     * @param id 资源的id
      * @param type 目标资源类型，目前可选值：video，audio
      * @return
      * */
     @GetMapping("/singleSource")
-    public String searchSingleSource(@RequestParam("keywords")String keywords,@RequestParam("type")String type){
+    public String searchSingleSource(@RequestParam("id")int id,@RequestParam("type")String type){
 
-        List<Map<String,Object>>result=new ArrayList<>();
+        Long start=System.currentTimeMillis();
+        Object result=null;
         String msg="";
         String status=Status.SUCCESS;
-        boolean haskey=redisService.exists(type.concat("Key").concat(keywords));//判断缓存中是否存在
+        boolean haskey=redisService.exists(type.concat("Key").concat(String.valueOf(id)));//判断缓存中是否存在
         if(haskey){
-            result= (List<Map<String, Object>>)(redisService.get(type.concat("Key").concat(keywords)));
+            result= redisService.get(type.concat("Key").concat(String.valueOf(id)));
             msg="数据来自redis缓存";
         }else {
-            result=commonDao.selectSourceLike(keywords,"name",type);
-            if(result==null||result.isEmpty()){
+            String soucrceKey=null;
+            if(type.equals("video")){
+                result=searchService.findDetails(commonDao,id,type, Video.class);
+                soucrceKey=Context.videoKey;
+            }else {
+                result=searchService.findDetails(commonDao,id,type, Audio.class);
+                soucrceKey=Context.audioKey;
+            }
+            if(result==null){
                 msg=Context.NoSuchFile;
                 status=Status.FAIL;
             }else {
                 msg="数据来自直接在数据库中查询";
-                redisService.set(type.concat("Key").concat(keywords),result,10L,TimeUnit.MINUTES);
+                redisService.set(soucrceKey.concat(String.valueOf(id)),result,10L,TimeUnit.MINUTES);
             }
 
         }
-        return ResultUtil.buildJSONResult(status,msg,result);
+        Long end =System.currentTimeMillis();
+        return ResultUtil.buildJSONResult(status,msg,String.valueOf(end-start),result);
     }
 
 
@@ -164,8 +147,7 @@ public class SearchByRedisController {
         result.put("video",hotVideos);
         result.put("audio",hotAudios);
 
-
-        return ResultUtil.buildJSONResult(status,msg,result);
+        return ResultUtil.buildJSONResult(status,msg,"",result);
     }
 
 }

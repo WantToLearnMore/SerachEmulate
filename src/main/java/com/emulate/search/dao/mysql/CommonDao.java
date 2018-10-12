@@ -45,10 +45,12 @@ public interface CommonDao {
      * */
     public List <Map<String,Object>>selectSourceLike(String key, String scope,String tableName, List<String>fields);
 
-
+    public List<Map<String,Object>> selectSourceLike(String key1,String key2,String scope1,String scope2,int option,String tableName,String ...fields);
     /**
      * 计数
      *
      * */
     public int countSource(String tableName);
+
+    public void delete(int id);
 }

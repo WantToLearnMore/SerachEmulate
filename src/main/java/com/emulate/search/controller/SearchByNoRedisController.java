@@ -3,14 +3,20 @@ package com.emulate.search.controller;
 import com.emulate.search.common.Context;
 import com.emulate.search.common.Status;
 import com.emulate.search.dao.mysql.CommonDao;
+import com.emulate.search.po.Audio;
+import com.emulate.search.po.RequestInfo;
+import com.emulate.search.po.Video;
 import com.emulate.search.service.SearchService;
 import com.emulate.search.utils.ResultUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,72 +29,57 @@ public class SearchByNoRedisController {
     @Resource
     private CommonDao commonDao;
 
+    @Autowired
+    private SearchService searchService;
+
     /**
      * 搜索全部类容：视/音频
-     * @param keywords 关键字
+     * @param requestInfo
      * @return 符合关键字的相关视/音频
      * */
     @GetMapping("/searchSource")
-    public String serach(@RequestParam("keywords")String keywords){
+    public String serach(RequestInfo requestInfo){
 
-        List<Map<String,Object>>videos=commonDao.selectSourceLike(keywords,"name","video");
-        List<Map<String,Object>>audios=commonDao.selectSourceLike(keywords,"name","audio");
+        Long start=System.currentTimeMillis();
+        List<Map<String,Object>>result=searchService.searchSource(commonDao,requestInfo);
+        Long end =System.currentTimeMillis();
 
-        boolean hasSource=false;
-        Map<String,Object>result=new HashMap<>();
-        if(!(videos.isEmpty()||videos==null)){
-            result.put("video",videos);
-            hasSource=true;
-        }
-        if (!(audios==null||audios.isEmpty())){
-            result.put("audio",audios);
-            hasSource=true;
-        }
-        String status=Status.FAIL;
-        String msg=Context.NoSuchFile;
-
-        if (hasSource){
-            status=Status.SUCCESS;
-            msg=Context.Success;
-        }
-        return ResultUtil.buildJSONResult(status,msg,result);
-    }
-
-    /**
-     * 搜索音频
-     * @param keywords 搜索的关键字
-     * @return 符合关键字的相关音频
-     * */
-    @GetMapping("/searchAudio")
-    public String searchAudio(@RequestParam("keywords")String keywords){
-
-        List<Map<String,Object>> audios=commonDao.selectSourceLike(keywords,"name","audio");
         String status=Status.SUCCESS;
         String msg=Context.Success;
-        if(audios==null||audios.size()==0){
-            status= Status.FAIL;
+        if(result==null||result.isEmpty()){
+            status=Status.FAIL;
             msg=Context.NoSuchFile;
         }
-         String result= ResultUtil.buildJSONResult(status,msg,audios);
-        return result;
+
+        return ResultUtil.buildJSONResult(status,msg,String.valueOf(end-start),result);
     }
 
     /**
-     * 搜索视频
-     * @param keywords 搜索的关键字
-     * @return 符合关键字的相关视频
+     * 搜索具体某一资源的详情
+     *@param type 资源类型
+     * @param id  资源id
+     * @return
      * */
-    @GetMapping("/searchVideo")
-    public String searchVideo(@RequestParam("keywords")String keywords){
+    @GetMapping("/searchDetail")
+    public String searchSingle(@RequestParam("id")int id,@RequestParam("type")String type){
 
-        List<Map<String,Object>>videos=commonDao.selectSourceLike(keywords,"name","video");
+        Long start =System.currentTimeMillis();
+        Object result=null;
+        if(type=="video"){
+            result=searchService.findDetails(commonDao,id,type, Video.class);
+        }else {
+            result=searchService.findDetails(commonDao,id,type, Audio.class);
+        }
 
         String status=Status.SUCCESS;
-        String msg= Context.Success;
-        if(videos.size()==0||videos==null){
-            status= Status.FAIL;
+        String msg=Context.Success;
+        if(result==null){
+            status=Status.FAIL;
             msg=Context.NoSuchFile;
         }
-        return ResultUtil.buildJSONResult(status,msg,videos);
+        Long end =System.currentTimeMillis();
+        return ResultUtil.buildJSONResult(status,msg,String.valueOf(end-start),result);
     }
+
+
 }
