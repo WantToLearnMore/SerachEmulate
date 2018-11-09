@@ -13,6 +13,7 @@ public class SearchProperty {
     private String orderByStr; //排序部分
     private String groupByStr; //分组部分
     private String keywords;//关键字
+    private String author;//作者
 
 
     public String getIndex() {
@@ -85,5 +86,13 @@ public class SearchProperty {
 
     public void setKeywords(String keywords) {
         this.keywords = keywords;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 }

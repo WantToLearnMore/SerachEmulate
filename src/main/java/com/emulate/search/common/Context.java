@@ -7,10 +7,13 @@ public class Context {
     public static String HasVideo="有相关视频！";
     public static String HasAudio="有相关音频！";
     public static String timeOut="";
-    public static String esDefaultFields="name";
-    public static String esDefaultIndex="searchEmulate";
 
+    //ES
+    public static String esDefaultIndex="searchemulate";
+    public static String esVideoIndex="emulatevideo";
+    public static String esAudioIndex="emulateaudio";
 
+    //redis
     public static final String audioKey = "audioKey";//这里的key值可以自己修改
     public static final String videoKey="videoKey";
     public static final String videoAuthor="videoAuthor";

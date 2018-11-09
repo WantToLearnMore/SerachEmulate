@@ -6,7 +6,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
-@Document(indexName = "searchTest",type = "audio")
+@Document(indexName = "searchemulate",type = "audio")
 public class Audio implements Serializable {
 
     @Id
@@ -19,10 +19,28 @@ public class Audio implements Serializable {
     private String author;//歌手
     private String description;//简介
     private String cover;
-    private int type;//音乐类型
+    private int category;//音乐类型
     private int status;
     private Date creatTime;//上传时间
     private String language;//语言
+
+    @Override
+    public String toString() {
+        return "Audio{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", star=" + star +
+                ", publish=" + publish +
+                ", url='" + url + '\'' +
+                ", author='" + author + '\'' +
+                ", description='" + description + '\'' +
+                ", cover='" + cover + '\'' +
+                ", category=" + category +
+                ", status=" + status +
+                ", creatTime=" + creatTime +
+                ", language='" + language + '\'' +
+                '}';
+    }
 
     public int getId() {
         return id;
@@ -38,6 +56,14 @@ public class Audio implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getStar() {
+        return star;
+    }
+
+    public void setStar(int star) {
+        this.star = star;
     }
 
     public Date getPublish() {
@@ -80,12 +106,12 @@ public class Audio implements Serializable {
         this.cover = cover;
     }
 
-    public int getType() {
-        return type;
+    public int getCategory() {
+        return category;
     }
 
-    public void setType(int type) {
-        this.type = type;
+    public void setCategory(int category) {
+        this.category = category;
     }
 
     public int getStatus() {
@@ -110,23 +136,5 @@ public class Audio implements Serializable {
 
     public void setLanguage(String language) {
         this.language = language;
-    }
-
-    @Override
-    public String toString() {
-        return "Audio{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", star=" + star +
-                ", publish=" + publish +
-                ", url='" + url + '\'' +
-                ", author='" + author + '\'' +
-                ", description='" + description + '\'' +
-                ", cover='" + cover + '\'' +
-                ", type=" + type +
-                ", status=" + status +
-                ", creatTime=" + creatTime +
-                ", language='" + language + '\'' +
-                '}';
     }
 }

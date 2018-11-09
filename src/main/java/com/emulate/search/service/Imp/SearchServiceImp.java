@@ -1,6 +1,7 @@
 package com.emulate.search.service.Imp;
 
 import com.emulate.search.common.Context;
+import com.emulate.search.controller.UserController;
 import com.emulate.search.dao.common.VideoDao;
 import com.emulate.search.dao.mysql.CommonDao;
 import com.emulate.search.po.RequestInfo;
@@ -9,6 +10,8 @@ import com.emulate.search.service.RedisService;
 import com.emulate.search.service.SearchService;
 import com.emulate.search.utils.ObjectUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class SearchServiceImp implements SearchService {
 
-
+    private final static Logger logger =  LoggerFactory.getLogger(SearchServiceImp.class);
     @Autowired
     private VideoDao videoDao;
 
@@ -34,6 +37,7 @@ public class SearchServiceImp implements SearchService {
      */
     @Override
     public List searchFromRedis(RedisService redisService,RequestInfo requestInfo){
+        Long start=System.currentTimeMillis();
         Map<String,Object> result=new HashMap<>();
         List<String>authorIds=null;
         List<String>nameIds=null;
@@ -42,17 +46,19 @@ public class SearchServiceImp implements SearchService {
         boolean hasName=false;
         boolean hasAuhor=false;
         if(StringUtils.isNotEmpty(requestInfo.getKeywords())){
+            logger.info("读取是的key："+requestInfo.getSourceType().concat("Name").concat(requestInfo.getKeywords()));
             hasName=redisService.exists(requestInfo.getSourceType().concat("Name").concat(requestInfo.getKeywords()));
             System.out.println(hasName);
         }
        if(StringUtils.isNotEmpty(requestInfo.getAuthor())){
+           logger.info("读取是的key："+requestInfo.getSourceType().concat("Author").concat(requestInfo.getAuthor()));
            hasAuhor=redisService.exists(requestInfo.getSourceType().concat("Author").concat(requestInfo.getAuthor()));
            System.out.println(hasAuhor);
        }
 
         if(hasName==false&&hasAuhor==false){
 
-            System.out.println("进来了");
+            logger.info("进来了");
             return null;
         }
         if(StringUtils.isNotEmpty(requestInfo.getKeywords())){
@@ -118,8 +124,10 @@ public class SearchServiceImp implements SearchService {
             }
         }
         if(result!=null&&!result.isEmpty()){
+            logger.info("searchFormRedis"+String.valueOf(System.currentTimeMillis()-start));
             return new ArrayList(result.values());
         }
+        logger.info("searchFormRedis"+String.valueOf(System.currentTimeMillis()-start));
         return null;
     }
 
@@ -147,17 +155,20 @@ public class SearchServiceImp implements SearchService {
      * */
     @Override
     public List<Map<String,Object>> searchWithRedis(RedisService redisService,RequestInfo requestInfo,CommonDao commonDao){
-       List<Map<String,Object>>result=searchSource(commonDao,requestInfo);//查询数据
-
+       Long start=System.currentTimeMillis();
+        List<Map<String,Object>>result=searchSource(commonDao,requestInfo);//查询数据
+       logger.info("查询用时："+String.valueOf(System.currentTimeMillis()-start));
         //写入redis。两步：1、fiield-ids  2、id-object
        if (result==null||result.isEmpty()){
            return null;
        }else {
            setSourceIdsInRedis(result,"name",redisService,requestInfo);
            setSourceIdsInRedis(result,"author",redisService,requestInfo);
+           logger.info("储存ids："+String.valueOf(System.currentTimeMillis()-start));
            for (Map<String,Object>map:result) {
                redisService.set(getSourceKey(requestInfo,"id").concat(String.valueOf(map.get("id"))),map,10L,TimeUnit.MINUTES);
            }
+           logger.info("储存对象："+String.valueOf(System.currentTimeMillis()-start));
        }
         return result;
     }
@@ -168,10 +179,13 @@ public class SearchServiceImp implements SearchService {
 
     //在redis中查找资源
     private Map<String,Object> findFromRedis(RedisService redisService,String key,String searchKey){
+        Long start= System.currentTimeMillis();
         boolean haskey=redisService.exists(key.concat(searchKey));
         if(haskey){
+            logger.info("findFormRedis："+String.valueOf(System.currentTimeMillis()-start));
             return ObjectUtil.objectToMap(redisService.get(key.concat(searchKey)));
         }
+        logger.info("findFormRedis："+String.valueOf(System.currentTimeMillis()-start));
         return null;
     }
 
@@ -200,8 +214,8 @@ public class SearchServiceImp implements SearchService {
         String sourceKey=getSourceKey(requestInfo,field);
         List<Map<String,Object>>tmpsource=new ArrayList<>(source);
          int size=tmpsource.size();
+        int n=0;
         for (int i=0;i<size;i++) {
-            System.out.println("list大小："+tmpsource.size());
 
             Map<String,Object>map=tmpsource.get(i);
             List<String>ids=new ArrayList<>();
@@ -213,12 +227,14 @@ public class SearchServiceImp implements SearchService {
                 String temp=String.valueOf(m.get(field));
                 if(str.equals(temp)){
                     ids.add(String.valueOf(m.get("id")));
-                    tmpsource.remove(j);
-                    size=tmpsource.size();
+                    i++;
                 }
             }
+            n++;
+            logger.info("写入是的key："+sourceKey.concat(str));
             redisService.set(sourceKey.concat(str),ids,10L, TimeUnit.MINUTES);
         }
+        System.out.println("执行了："+n+"次！");
     }
 
     /**

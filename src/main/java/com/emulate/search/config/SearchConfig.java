@@ -29,12 +29,12 @@ public class SearchConfig {
     private String esClusterName;
 
 
-    //解决由于与本项目中redis使用了netty而引起初始化时的错误
+    /**解决由于与本项目中redis使用了netty而引起初始化时的错误
     @PostConstruct
     void init() {
         System.setProperty("es.set.netty.runtime.available.processors", "false");
     }
-
+    **/
 
     @Bean
     public TransportClient transportClient() throws Exception {

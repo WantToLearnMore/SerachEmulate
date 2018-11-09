@@ -19,7 +19,7 @@ public class Audio implements Serializable {
     private String author;//歌手
     private String description;//简介
     private String cover;
-    private int type;//音乐类型
+    private int category;//音乐类型
     private int status;
     private Date creatTime;//上传时间
     private String language;//语言
@@ -80,12 +80,12 @@ public class Audio implements Serializable {
         this.cover = cover;
     }
 
-    public int getType() {
-        return type;
+    public int getCategory() {
+        return category;
     }
 
-    public void setType(int type) {
-        this.type = type;
+    public void setCategory(int category) {
+        this.category = category;
     }
 
     public int getStatus() {

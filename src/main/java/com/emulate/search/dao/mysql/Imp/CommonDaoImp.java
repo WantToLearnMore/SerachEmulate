@@ -57,6 +57,61 @@ public class CommonDaoImp implements CommonDao {
         List<Map<String, Object>>result=jdbcTemplate.queryForList(sql.toString());
         return result.size()==0? null: ObjectUtil.mapToObject(result.get(0),T);
     }
+
+
+    public List<Map<String,Object>>selectSourceUseLimit(String key,String scope,int startoffset,int endoffset,String tableName,String...fields){
+
+        StringBuilder sql=new StringBuilder();
+        sql.append(" select ");
+        sql.append(ObjectUtil.buildFieldString(fields));
+        sql.append(" from ");
+        sql.append(tableName);
+        sql.append(" where locate ('");
+        sql.append(key);
+        sql.append("',");
+        sql.append(scope);
+        sql.append(")");
+        sql.append(" and id ");
+        sql.append(" between ");
+        sql.append(startoffset);
+        sql.append(" and ");
+        sql.append(endoffset);
+
+        List<Map<String,Object>>result=jdbcTemplate.queryForList(sql.toString());
+        return result.size()==0?null:result;
+    }
+    public List<Map<String,Object>>selectSourceUseLimit(String key1,String key2,String scope1,String scope2,int option,int startoffset,int endoffset,String tableName,String...fields){
+        String op="or";
+        if(option!=1){
+            op="and";
+        }
+
+        StringBuilder sql=new StringBuilder();
+        sql.append(" select ");
+        sql.append(ObjectUtil.buildFieldString(fields));
+        sql.append(" from ");
+        sql.append(tableName);
+        sql.append(" where ( locate ('");
+        sql.append(key1);
+        sql.append("',");
+        sql.append(scope1);
+        sql.append(")");
+        sql.append(" "+op+" ");
+        sql.append(" locate ('");
+        sql.append(key2);
+        sql.append("',");
+        sql.append(scope2);
+        sql.append("))");
+        sql.append("and id ");
+        sql.append(" between ");
+        sql.append(startoffset);
+        sql.append(" and ");
+        sql.append(endoffset);
+
+        List<Map<String,Object>>result=jdbcTemplate.queryForList(sql.toString());
+        return result.size()==0?null:result;
+    }
+
     public List<Map<String,Object>> selectSourceLike(String key1,String key2,String scope1,String scope2,int option,String tableName,String ...fields){
         String op="or";
         if(option!=1){
@@ -129,6 +184,8 @@ public class CommonDaoImp implements CommonDao {
         List<Map<String,Object>>result=jdbcTemplate.queryForList(sql.toString());
         return result.size()==0?null:result;
     }
+
+
 
 
 

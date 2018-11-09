@@ -25,6 +25,21 @@ public interface CommonDao {
      * */
     public <T>T selectById(int id,String tableName,Class<T>T,List<String>fields);
 
+    public List<Map<String,Object>>selectSourceUseLimit(String key,String scope,int startoffset,int endoffset,String tableName,String...fields);
+
+    /**
+     * @param key1 检索的关键字1
+     * @param key2 检索的关键字2
+     * @param scope1 检索条件
+     * @param scope2 检索条件
+     * @param option 检索方式
+     * @param startoffset 开始的id号
+     * @param endoffset  结束的id号
+     * @param tableName 表名
+     * @param fields 结果包含的属性
+     * */
+    public List<Map<String,Object>>selectSourceUseLimit(String key1,String key2,String scope1,String scope2,int option,int startoffset,int endoffset,String tableName,String...fields);
+
     /**
      * 模糊查询
      * @param key 关键字

@@ -81,5 +81,4 @@ public class SearchByNoRedisController {
         return ResultUtil.buildJSONResult(status,msg,String.valueOf(end-start),result);
     }
 
-
 }

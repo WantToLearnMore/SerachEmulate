@@ -9,4 +9,5 @@ public class SerachApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SerachApplication.class, args);
 	}
+
 }

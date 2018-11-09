@@ -2,8 +2,11 @@ package com.emulate.search.utils;
 
 import com.emulate.search.common.Context;
 import com.emulate.search.po.SearchProperty;
+import com.emulate.search.po.elasticPO.Video;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,12 +14,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 
+import java.util.List;
 import java.util.Map;
+
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 
 public class ESearchUtil {
 
+    private final static Logger logger =  LoggerFactory.getLogger(ESearchUtil.class);
     /**
      *简易通用es分页查询
      * @param clazz 资源类型
@@ -25,16 +31,26 @@ public class ESearchUtil {
      * @param elasticsearchTemplate
      * @param searchProperty 查询的条件
      * */
-    public <T>Page queryPagedSource(ElasticsearchTemplate elasticsearchTemplate,Integer pageNo, Integer pageSize, SearchProperty searchProperty, Class<T>clazz) {
-
+    public static <T>Page queryPagedSource(ElasticsearchTemplate elasticsearchTemplate,Integer pageNo, Integer pageSize, SearchProperty searchProperty, Class<T>clazz) {
 
         NativeSearchQueryBuilder sql=new NativeSearchQueryBuilder();
         if(StringUtils.isNotEmpty(searchProperty.getIndex())){
+            //类似设置数据库
             sql.withIndices(searchProperty.getIndex());
+            logger.info("索引名："+searchProperty.getIndex());
         }
 
         if(StringUtils.isNotEmpty(searchProperty.getType())){
+            //类似设置数据库表名
             sql.withTypes(searchProperty.getType());
+            logger.info("类型名："+searchProperty.getType());
+        }
+
+        if (searchProperty.getFields()!=null||searchProperty.getFields().length!=0){
+            //设置返回的字段
+            sql.withFields(searchProperty.getFields());
+
+            logger.info("设置属性");
         }
 
         //分页查询，1、按照某个字段排序，降序；2、默认排序
@@ -47,35 +63,62 @@ public class ESearchUtil {
         sql.withPageable(pageable);
 
         BoolQueryBuilder queryBuilder=boolQuery();
-        if (searchProperty.getFields()==null||searchProperty.getFields().length==0){
-            //模糊匹配，默认为根据资源名字进行模糊匹配
-            queryBuilder.filter(matchQuery(searchProperty.getKeywords(), Context.esDefaultFields));
-        }else {
-            //在多个字段中进行模糊匹配
-            queryBuilder.filter(multiMatchQuery(searchProperty.getKeywords(),searchProperty.getFields()));
-        }
-
         //多条件设置,支持or、and的选择
-        if(searchProperty.getParam()!=null&&!searchProperty.getParam().isEmpty()){
+        if(searchProperty.getParam()==null||searchProperty.getParam().isEmpty()){
+            return null;
+        }else {
+            logger.info("and 或者 or："+searchProperty.isOr());
             if(searchProperty.isOr()){
                 Map<String,String>params=searchProperty.getParam();
                 for (Map.Entry<String,String> entry:params.entrySet()){
-                    queryBuilder.should(termQuery(entry.getKey(),entry.getValue()));
+                    queryBuilder.should(matchPhraseQuery(entry.getKey(),entry.getValue()));
                 }
             }else {
                 Map<String,String>params=searchProperty.getParam();
                 for (Map.Entry<String,String> entry:params.entrySet()){
-                    queryBuilder.must(termQuery(entry.getKey(),entry.getValue()));
+                    queryBuilder.must(matchPhraseQuery(entry.getKey(),entry.getValue()));
                 }
             }
         }
 
-        Page page = elasticsearchTemplate.queryForPage(sql.withQuery(queryBuilder).build(),clazz);
+        sql.withQuery(queryBuilder);
+        Page result=null;
+        try {
+            logger.info(queryBuilder.toString());
+            result = elasticsearchTemplate.queryForPage(sql.build(),clazz);
+            logger.info(String.valueOf(result.getTotalElements()));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
-        return page;
+
+        return result;
     }
 
+    public static List findAllInfo(ElasticsearchTemplate elasticsearchTemplate){
+        NativeSearchQueryBuilder sql=new NativeSearchQueryBuilder();
+        sql.withIndices("searchemulate");
+        sql.withTypes("video");
+        sql.withFields(Context.searchFileds);
+        sql.withFilter(matchPhraseQuery("name","战狼"));
+        return elasticsearchTemplate.queryForList(sql.build(), Video.class);
+    }
 
+    public static List testQ(ElasticsearchTemplate elasticsearchTemplate){
+        NativeSearchQueryBuilder sql=new NativeSearchQueryBuilder();
+        sql.withIndices("searchemulate");
+        sql.withTypes("video");
+        sql.withFields(Context.searchFileds);
+
+        BoolQueryBuilder queryBuilder=boolQuery();
+        queryBuilder.filter(matchPhraseQuery("author","吴京"));
+        sql.withQuery(queryBuilder);
+        return elasticsearchTemplate.queryForList(sql.build(), Video.class);
+    }
+    public static void DInfo(ElasticsearchTemplate elasticsearchTemplate){
+        NativeSearchQueryBuilder sql=new NativeSearchQueryBuilder();
+
+    }
     public static void main(String []args){
         boolean s=false;
         System.out.println(s);
